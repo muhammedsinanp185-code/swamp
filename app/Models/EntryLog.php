@@ -25,7 +25,7 @@ class EntryLog extends Model
         return $this->belongsTo(VisitorPass::class, 'visitor_pass_id');
     }
 
-    public function guard()
+    public function scannedBy()
     {
         return $this->belongsTo(User::class, 'scanned_by_user_id');
     }

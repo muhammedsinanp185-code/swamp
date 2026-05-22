@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('visitors', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('organization_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('phone');
+            $table->string('email')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

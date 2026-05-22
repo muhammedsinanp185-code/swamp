@@ -15,10 +15,6 @@ const props = defineProps<{
         <template #header>
             <div class="flex items-center justify-between">
                 <span>Parcel Management</span>
-                <button class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors">
-                    <PlusIcon class="h-5 w-5" />
-                    Log New Parcel
-                </button>
             </div>
         </template>
 
@@ -73,6 +69,12 @@ const props = defineProps<{
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div class="p-6 flex justify-center border-t border-gray-200 dark:border-zinc-800">
+                <button class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors">
+                    <PlusIcon class="h-5 w-5" />
+                    Log New Parcel
+                </button>
             </div>
         </div>
     </AuthenticatedLayout>

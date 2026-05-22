@@ -3,18 +3,20 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { UsersIcon, QrCodeIcon, ShieldCheckIcon, ChartBarIcon } from '@heroicons/vue/24/outline';
 
-const stats = [
-    { name: 'Total Visitors Today', value: '142', change: '+12%', changeType: 'positive', icon: UsersIcon },
-    { name: 'Active QR Passes', value: '85', change: '+5%', changeType: 'positive', icon: QrCodeIcon },
-    { name: 'Entries Logged', value: '312', change: '+18%', changeType: 'positive', icon: ShieldCheckIcon },
-    { name: 'Peak Time', value: '10:00 AM', change: 'Stable', changeType: 'neutral', icon: ChartBarIcon },
-];
+const props = defineProps<{
+    stats: {
+        totalVisitorsToday: number;
+        activePasses: number;
+        entriesLogged: number;
+    },
+    recentVisitors: any[]
+}>();
 
-const recentVisitors = [
-    { id: 1, name: 'John Doe', purpose: 'Meeting', time: '10:15 AM', status: 'Checked In' },
-    { id: 2, name: 'Sarah Smith', purpose: 'Delivery', time: '09:45 AM', status: 'Checked Out' },
-    { id: 3, name: 'Mike Johnson', purpose: 'Interview', time: '09:30 AM', status: 'Checked In' },
-    { id: 4, name: 'Emily Davis', purpose: 'Maintenance', time: '08:15 AM', status: 'Checked Out' },
+const displayStats = [
+    { name: 'Total Visitors Today', value: props.stats.totalVisitorsToday, change: '+12%', changeType: 'positive', icon: UsersIcon },
+    { name: 'Active QR Passes', value: props.stats.activePasses, change: '+5%', changeType: 'positive', icon: QrCodeIcon },
+    { name: 'Entries Logged', value: props.stats.entriesLogged, change: '+18%', changeType: 'positive', icon: ShieldCheckIcon },
+    { name: 'Peak Time', value: '10:00 AM', change: 'Stable', changeType: 'neutral', icon: ChartBarIcon },
 ];
 </script>
 
@@ -29,7 +31,7 @@ const recentVisitors = [
         <div class="space-y-6">
             <!-- Stats -->
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div v-for="stat in stats" :key="stat.name" class="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm ring-1 ring-black/5 dark:ring-white/5 rounded-2xl p-6 transition-all duration-200 hover:shadow-md">
+                <div v-for="stat in displayStats" :key="stat.name" class="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm ring-1 ring-black/5 dark:ring-white/5 rounded-2xl p-6 transition-all duration-200 hover:shadow-md">
                     <div class="flex items-center gap-4">
                         <div class="p-3 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
                             <component :is="stat.icon" class="w-6 h-6" />

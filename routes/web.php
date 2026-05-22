@@ -15,7 +15,35 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $orgId = auth()->user()->organization_id;
+    
+    $totalVisitorsToday = \App\Models\VisitorPass::where('organization_id', $orgId)->whereDate('created_at', today())->count();
+    $activePasses = \App\Models\VisitorPass::where('organization_id', $orgId)->where('status', 'active')->count();
+    $entriesLogged = \App\Models\EntryLog::where('organization_id', $orgId)->whereDate('created_at', today())->count();
+    
+    $recentVisitors = \App\Models\VisitorPass::with('visitor')
+        ->where('organization_id', $orgId)
+        ->latest()
+        ->take(4)
+        ->get()
+        ->map(function ($pass) {
+            return [
+                'id' => $pass->id,
+                'name' => $pass->visitor ? $pass->visitor->name : 'Unknown',
+                'purpose' => $pass->purpose,
+                'time' => $pass->created_at->format('h:i A'),
+                'status' => $pass->status === 'active' ? 'Active' : ucfirst($pass->status)
+            ];
+        });
+
+    return Inertia::render('Dashboard', [
+        'stats' => [
+            'totalVisitorsToday' => $totalVisitorsToday,
+            'activePasses' => $activePasses,
+            'entriesLogged' => $entriesLogged,
+        ],
+        'recentVisitors' => $recentVisitors
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

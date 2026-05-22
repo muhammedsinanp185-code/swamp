@@ -12,7 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('entry_logs', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('organization_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('visitor_pass_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('scanned_by_user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->enum('type', ['check_in', 'check_out']);
+            $table->boolean('manual_entry')->default(false);
+            $table->text('notes')->nullable();
+            $table->dateTime('scanned_at')->nullable();
             $table->timestamps();
         });
     }
