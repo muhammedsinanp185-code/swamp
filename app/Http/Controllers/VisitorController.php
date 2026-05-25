@@ -19,6 +19,17 @@ class VisitorController extends Controller
             ->get()
             ->map(function ($visitor) {
                 $latestPass = $visitor->passes->first();
+                $status = 'N/A';
+                if ($latestPass) {
+                    if ($latestPass->valid_until->isPast()) {
+                        $status = 'expired';
+                    } elseif ($latestPass->valid_from->isFuture()) {
+                        $status = 'pending';
+                    } else {
+                        $status = $latestPass->status ?? 'active';
+                    }
+                }
+
                 return [
                     'id' => $visitor->id,
                     'name' => $visitor->name,
@@ -26,7 +37,7 @@ class VisitorController extends Controller
                     'email' => $visitor->email,
                     'host_name' => $latestPass ? ($latestPass->host ? $latestPass->host->name : 'N/A') : 'N/A',
                     'valid_until' => $latestPass ? $latestPass->valid_until->format('Y-m-d H:i') : 'N/A',
-                    'status' => $latestPass ? $latestPass->status : 'N/A',
+                    'status' => $status,
                 ];
             });
 
@@ -61,6 +72,16 @@ class VisitorController extends Controller
         );
 
         // Create Pass
+        $status = 'active';
+        $validFrom = \Illuminate\Support\Carbon::parse($validated['valid_from']);
+        $validUntil = \Illuminate\Support\Carbon::parse($validated['valid_until']);
+
+        if ($validUntil->isPast()) {
+            $status = 'expired';
+        } elseif ($validFrom->isFuture()) {
+            $status = 'pending';
+        }
+
         \App\Models\VisitorPass::create([
             'organization_id' => $organizationId,
             'visitor_id' => $visitor->id,
@@ -69,7 +90,7 @@ class VisitorController extends Controller
             'valid_from' => $validated['valid_from'],
             'valid_until' => $validated['valid_until'],
             'type' => $validated['type'],
-            'status' => 'active',
+            'status' => $status,
             'qr_uuid' => (string) \Illuminate\Support\Str::uuid()
         ]);
 

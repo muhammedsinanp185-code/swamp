@@ -2,13 +2,30 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps<{
     visitors: any[];
 }>();
 
 const searchQuery = ref('');
+const statusFilter = ref('all');
+
+const filteredVisitors = computed(() => {
+    const query = searchQuery.value.trim().toLowerCase();
+    return props.visitors.filter(visitor => {
+        const matchesSearch = !query ||
+            visitor.name.toLowerCase().includes(query) ||
+            visitor.phone.toLowerCase().includes(query) ||
+            visitor.email?.toLowerCase().includes(query) ||
+            visitor.host_name?.toLowerCase().includes(query);
+
+        const matchesStatus = statusFilter.value === 'all'
+            || visitor.status?.toLowerCase() === statusFilter.value;
+
+        return matchesSearch && matchesStatus;
+    });
+});
 </script>
 
 <template>
@@ -30,11 +47,11 @@ const searchQuery = ref('');
                     <input v-model="searchQuery" type="text" class="block w-full rounded-xl border-0 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700 dark:focus:ring-indigo-500" placeholder="Search visitors by name, phone, or QR..." />
                 </div>
                 <div class="flex gap-2">
-                    <select class="rounded-xl border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700">
-                        <option>All Status</option>
-                        <option>Active</option>
-                        <option>Pending</option>
-                        <option>Expired</option>
+                    <select v-model="statusFilter" class="rounded-xl border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700">
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="pending">Pending</option>
+                        <option value="expired">Expired</option>
                     </select>
                 </div>
             </div>
@@ -53,12 +70,12 @@ const searchQuery = ref('');
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                        <tr v-if="visitors.length === 0">
+                        <tr v-if="filteredVisitors.length === 0">
                             <td colspan="5" class="py-12 text-center text-gray-500 dark:text-zinc-400">
-                                No visitors found. Create a new pass to get started.
+                                {{ searchQuery ? 'No visitors found matching your search.' : 'No visitors found. Create a new pass to get started.' }}
                             </td>
                         </tr>
-                        <tr v-for="visitor in visitors" :key="visitor.id" class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                        <tr v-for="visitor in filteredVisitors" :key="visitor.id" class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                             <td class="whitespace-nowrap py-4 pl-6 pr-3">
                                 <div class="flex items-center">
                                     <div class="h-10 w-10 flex-shrink-0">

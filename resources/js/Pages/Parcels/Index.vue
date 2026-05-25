@@ -2,10 +2,26 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { TruckIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
+import { ref, computed } from 'vue';
 
 const props = defineProps<{
     parcels: any[];
 }>();
+
+const searchQuery = ref('');
+
+const filteredParcels = computed(() => {
+    if (!searchQuery.value.trim()) {
+        return props.parcels;
+    }
+
+    const query = searchQuery.value.toLowerCase();
+    return props.parcels.filter(parcel =>
+        parcel.tracking_number.toLowerCase().includes(query) ||
+        parcel.recipient_name.toLowerCase().includes(query) ||
+        parcel.courier_name.toLowerCase().includes(query)
+    );
+});
 </script>
 
 <template>
@@ -24,7 +40,7 @@ const props = defineProps<{
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                     </div>
-                    <input type="text" class="block w-full rounded-xl border-0 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700 dark:focus:ring-indigo-500" placeholder="Search by tracking number or recipient..." />
+                    <input v-model="searchQuery" type="text" class="block w-full rounded-xl border-0 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700 dark:focus:ring-indigo-500" placeholder="Search by tracking number or recipient..." />
                 </div>
             </div>
 
@@ -40,12 +56,12 @@ const props = defineProps<{
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                        <tr v-if="parcels.length === 0">
+                        <tr v-if="filteredParcels.length === 0">
                             <td colspan="5" class="py-12 text-center text-gray-500 dark:text-zinc-400">
-                                No parcels logged today.
+                                {{ searchQuery ? 'No parcels found matching your search.' : 'No parcels logged today.' }}
                             </td>
                         </tr>
-                        <tr v-for="parcel in parcels" :key="parcel.id" class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                        <tr v-for="parcel in filteredParcels" :key="parcel.id" class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                             <td class="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900 dark:text-white">
                                 <div class="flex items-center gap-3">
                                     <div class="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">

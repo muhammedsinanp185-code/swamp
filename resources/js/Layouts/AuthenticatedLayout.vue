@@ -21,6 +21,7 @@ import {
 
 const showingSidebar = ref(false);
 const isDarkMode = ref(false);
+const showNotifications = ref(false);
 
 const toggleDarkMode = () => {
     isDarkMode.value = !isDarkMode.value;
@@ -103,10 +104,18 @@ const navigation = [
           </button>
 
           <!-- Notifications -->
-          <button class="p-2 text-gray-500 hover:bg-gray-100 rounded-full dark:text-zinc-400 dark:hover:bg-zinc-800 transition-colors relative">
-            <BellIcon class="w-5 h-5" />
-            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-zinc-900"></span>
-          </button>
+          <div class="relative">
+            <button @click="showNotifications = !showNotifications" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full dark:text-zinc-400 dark:hover:bg-zinc-800 transition-colors">
+              <BellIcon class="w-5 h-5" />
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-zinc-900"></span>
+            </button>
+
+            <div v-if="showNotifications" class="absolute right-0 mt-2 w-80 bg-white dark:bg-zinc-900 shadow-lg rounded-xl z-50 ring-1 ring-black/5 dark:ring-white/5">
+              <div class="p-4">
+                <p class="text-sm text-gray-700 dark:text-zinc-300">No notifications</p>
+              </div>
+            </div>
+          </div>
 
           <!-- Settings Dropdown -->
           <Dropdown align="right" width="48">
