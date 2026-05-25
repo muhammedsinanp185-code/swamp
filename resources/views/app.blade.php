@@ -12,6 +12,22 @@
 
         <!-- Scripts -->
         @routes
+        <script>
+            (function() {
+                try {
+                    var stored = localStorage.getItem('theme');
+                    if (stored === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    } else if (stored === 'light') {
+                        document.documentElement.classList.remove('dark');
+                    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        document.documentElement.classList.add('dark');
+                    }
+                } catch (e) {
+                    // ignore
+                }
+            })();
+        </script>
         @vite(['resources/js/app.ts', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
     </head>

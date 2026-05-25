@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -25,13 +25,33 @@ const isDarkMode = ref(false);
 const showNotifications = ref(false);
 
 const toggleDarkMode = () => {
-    isDarkMode.value = !isDarkMode.value;
-    if (isDarkMode.value) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-    }
+  isDarkMode.value = !isDarkMode.value;
+  if (isDarkMode.value) {
+    document.documentElement.classList.add('dark');
+    try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+  } else {
+    document.documentElement.classList.remove('dark');
+    try { localStorage.setItem('theme', 'light'); } catch (e) {}
+  }
 };
+
+onMounted(() => {
+  try {
+    // initialize from persisted preference or current document class
+    const stored = localStorage.getItem('theme');
+    if (stored === 'dark') {
+      isDarkMode.value = true;
+      document.documentElement.classList.add('dark');
+    } else if (stored === 'light') {
+      isDarkMode.value = false;
+      document.documentElement.classList.remove('dark');
+    } else {
+      isDarkMode.value = document.documentElement.classList.contains('dark');
+    }
+  } catch (e) {
+    isDarkMode.value = document.documentElement.classList.contains('dark');
+  }
+});
 
 const navigation = [
   { name: 'Dashboard', href: route('dashboard'), icon: HomeIcon, current: route().current('dashboard') },
