@@ -12,8 +12,13 @@ class Parcel extends Model
     use HasFactory, SoftDeletes, HasUuids;
 
     protected $fillable = [
-        'organization_id', 'recipient_user_id', 'courier_name',
-        'tracking_number', 'photo_url', 'status'
+        'organization_id', 'recipient_user_id', 'recipient_name',
+        'courier_name', 'tracking_number', 'photo_url', 'status',
+        'arrived_at'
+    ];
+
+    protected $casts = [
+        'arrived_at' => 'datetime',
     ];
 
     public function recipient()
