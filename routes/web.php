@@ -6,35 +6,45 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
+    return Inertia::render('Home', [
         'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
     ]);
-});
+})->name('home');
+
+use App\Models\EntryLog;
+use App\Models\VisitorPass;
+use Carbon\Carbon;
 
 Route::get('/dashboard', function () {
-    $orgId = auth()->user()->organization_id;
-    
-    $totalVisitorsToday = \App\Models\VisitorPass::where('organization_id', $orgId)->whereDate('created_at', today())->count();
-    $activePasses = \App\Models\VisitorPass::where('organization_id', $orgId)->where('status', 'active')->count();
-    $entriesLogged = \App\Models\EntryLog::where('organization_id', $orgId)->whereDate('created_at', today())->count();
-    
-    $recentVisitors = \App\Models\VisitorPass::with('visitor')
-        ->where('organization_id', $orgId)
-        ->latest()
-        ->take(4)
-        ->get()
-        ->map(function ($pass) {
-            return [
-                'id' => $pass->id,
-                'name' => $pass->visitor ? $pass->visitor->name : 'Unknown',
-                'purpose' => $pass->purpose,
-                'time' => $pass->created_at->format('h:i A'),
-                'status' => $pass->status === 'active' ? 'Active' : ucfirst($pass->status)
-            ];
-        });
+    $today = Carbon::now();
+
+    $totalVisitorsToday = EntryLog::whereDate('scanned_at', $today->toDateString())->count();
+
+    $activePasses = VisitorPass::where(function ($q) use ($today) {
+        $q->where('status', 'active')
+          ->orWhere(function ($q2) use ($today) {
+              $q2->where('valid_from', '<=', $today)
+                 ->where('valid_until', '>=', $today);
+          });
+    })->count();
+
+    $entriesLogged = EntryLog::count();
+
+    $recentLogs = EntryLog::with(['pass.visitor'])
+        ->orderBy('scanned_at', 'desc')
+        ->take(5)
+        ->get();
+
+    $recentVisitors = $recentLogs->map(function ($log) {
+        $visitor = $log->pass?->visitor;
+        return [
+            'id' => $log->id,
+            'name' => $visitor?->name ?? 'Unknown',
+            'purpose' => $log->pass?->purpose ?? '',
+            'time' => optional($log->scanned_at)?->format('h:i A') ?? '',
+            'status' => $log->type === 'in' ? 'Checked In' : ($log->type === 'out' ? 'Checked Out' : ucfirst($log->type)),
+        ];
+    })->toArray();
 
     return Inertia::render('Dashboard', [
         'stats' => [
@@ -42,11 +52,13 @@ Route::get('/dashboard', function () {
             'activePasses' => $activePasses,
             'entriesLogged' => $entriesLogged,
         ],
-        'recentVisitors' => $recentVisitors
+        'recentVisitors' => $recentVisitors,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -55,7 +67,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('organizations', App\Http\Controllers\OrganizationController::class);
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('parcels', App\Http\Controllers\ParcelController::class);
-    Route::resource('settings', App\Http\Controllers\SettingsController::class);
+    Route::resource('subusers', App\Http\Controllers\SubuserController::class);
+    Route::resource('settings', App\Http\Controllers\SettingsController::class)->only(['index']);
+    Route::patch('settings', [App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
     Route::get('scanner', [App\Http\Controllers\QRScannerController::class, 'index'])->name('scanner.index');
 });
 

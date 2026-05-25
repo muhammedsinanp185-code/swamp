@@ -4,18 +4,21 @@ import { Head } from '@inertiajs/vue3';
 import { UsersIcon, QrCodeIcon, ShieldCheckIcon, ChartBarIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps<{
-    stats: {
-        totalVisitorsToday: number;
-        activePasses: number;
-        entriesLogged: number;
+    stats?: {
+        totalVisitorsToday?: number;
+        activePasses?: number;
+        entriesLogged?: number;
     },
-    recentVisitors: any[]
+    recentVisitors?: any[]
 }>();
 
+const stats = props.stats ?? { totalVisitorsToday: 0, activePasses: 0, entriesLogged: 0 };
+const recentVisitors = props.recentVisitors ?? [];
+
 const displayStats = [
-    { name: 'Total Visitors Today', value: props.stats.totalVisitorsToday, change: '+12%', changeType: 'positive', icon: UsersIcon },
-    { name: 'Active QR Passes', value: props.stats.activePasses, change: '+5%', changeType: 'positive', icon: QrCodeIcon },
-    { name: 'Entries Logged', value: props.stats.entriesLogged, change: '+18%', changeType: 'positive', icon: ShieldCheckIcon },
+    { name: 'Total Visitors Today', value: stats.totalVisitorsToday ?? 0, change: '+12%', changeType: 'positive', icon: UsersIcon },
+    { name: 'Active QR Passes', value: stats.activePasses ?? 0, change: '+5%', changeType: 'positive', icon: QrCodeIcon },
+    { name: 'Entries Logged', value: stats.entriesLogged ?? 0, change: '+18%', changeType: 'positive', icon: ShieldCheckIcon },
     { name: 'Peak Time', value: '10:00 AM', change: 'Stable', changeType: 'neutral', icon: ChartBarIcon },
 ];
 </script>

@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
@@ -19,6 +20,14 @@ Route::middleware('guest')->group(function () {
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
+
+    Route::get('login/user', function () {
+        return Inertia::render('Auth/LoginUser');
+    });
+
+    Route::get('login/admin', function () {
+        return Inertia::render('Auth/LoginAdmin');
+    });
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
