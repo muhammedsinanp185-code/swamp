@@ -16,21 +16,22 @@ use App\Models\VisitorPass;
 use Carbon\Carbon;
 
 Route::get('/dashboard', function () {
-    $today = Carbon::now();
+    $now = Carbon::now();
+    $organizationId = auth()->user()->organization_id;
 
-    $totalVisitorsToday = EntryLog::whereDate('scanned_at', $today->toDateString())->count();
+    $totalVisitorsToday = \App\Models\Visitor::where('organization_id', $organizationId)
+        ->whereDate('created_at', $now->toDateString())
+        ->count();
 
-    $activePasses = VisitorPass::where(function ($q) use ($today) {
-        $q->where('status', 'active')
-          ->orWhere(function ($q2) use ($today) {
-              $q2->where('valid_from', '<=', $today)
-                 ->where('valid_until', '>=', $today);
-          });
-    })->count();
+    $activePasses = VisitorPass::where('organization_id', $organizationId)
+        ->where('valid_from', '<=', $now)
+        ->where('valid_until', '>=', $now)
+        ->count();
 
-    $entriesLogged = EntryLog::count();
+    $entriesLogged = EntryLog::where('organization_id', $organizationId)->count();
 
-    $recentLogs = EntryLog::with(['pass.visitor'])
+    $recentLogs = EntryLog::where('organization_id', $organizationId)
+        ->with(['pass.visitor'])
         ->orderBy('scanned_at', 'desc')
         ->take(5)
         ->get();
@@ -42,7 +43,7 @@ Route::get('/dashboard', function () {
             'name' => $visitor?->name ?? 'Unknown',
             'purpose' => $log->pass?->purpose ?? '',
             'time' => optional($log->scanned_at)?->format('h:i A') ?? '',
-            'status' => $log->type === 'in' ? 'Checked In' : ($log->type === 'out' ? 'Checked Out' : ucfirst($log->type)),
+            'status' => $log->type === 'check_in' ? 'Checked In' : ($log->type === 'check_out' ? 'Checked Out' : ucfirst($log->type)),
         ];
     })->toArray();
 

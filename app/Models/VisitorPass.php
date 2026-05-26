@@ -35,4 +35,23 @@ class VisitorPass extends Model
     {
         return $this->hasMany(EntryLog::class);
     }
+
+    public function getCurrentStatusAttribute()
+    {
+        if ($this->status === 'canceled') {
+            return 'canceled';
+        }
+
+        $now = now();
+
+        if ($now->isAfter($this->valid_until)) {
+            return 'expired';
+        }
+
+        if ($now->isBefore($this->valid_from)) {
+            return 'pending';
+        }
+
+        return 'active';
+    }
 }

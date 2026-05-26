@@ -12,7 +12,19 @@ const form = useForm({
     type: 'single',
 });
 
+const toUtcIso = (value: string) => {
+    if (!value) return value;
+    const date = new Date(value);
+    return date.toISOString();
+};
+
 const submit = () => {
+    form.transform(data => ({
+        ...data,
+        valid_from: toUtcIso(data.valid_from),
+        valid_until: toUtcIso(data.valid_until),
+    }));
+
     form.post(route('visitors.store'));
 };
 </script>
@@ -42,21 +54,24 @@ const submit = () => {
                             <div class="sm:col-span-3">
                                 <label for="name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Full name</label>
                                 <div class="mt-2">
-                                    <input v-model="form.name" type="text" id="name" required class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700 dark:focus:ring-indigo-500" />
+                                    <input v-model="form.name" type="text" id="name" required :class="['block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:focus:ring-indigo-500', form.errors.name ? 'ring-red-500 focus:ring-red-500' : 'ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600']" />
+                                    <p v-if="form.errors.name" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.name }}</p>
                                 </div>
                             </div>
 
                             <div class="sm:col-span-3">
                                 <label for="phone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Phone number</label>
                                 <div class="mt-2">
-                                    <input v-model="form.phone" type="tel" id="phone" required class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700 dark:focus:ring-indigo-500" />
+                                    <input v-model="form.phone" type="tel" id="phone" required :class="['block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:focus:ring-indigo-500', form.errors.phone ? 'ring-red-500 focus:ring-red-500' : 'ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600']" />
+                                    <p v-if="form.errors.phone" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.phone }}</p>
                                 </div>
                             </div>
 
                             <div class="sm:col-span-6">
                                 <label for="email" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Email address</label>
                                 <div class="mt-2">
-                                    <input v-model="form.email" type="email" id="email" class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700 dark:focus:ring-indigo-500" />
+                                    <input v-model="form.email" type="email" id="email" :class="['block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:focus:ring-indigo-500', form.errors.email ? 'ring-red-500 focus:ring-red-500' : 'ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600']" />
+                                    <p v-if="form.errors.email" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.email }}</p>
                                 </div>
                             </div>
                         </div>
@@ -70,21 +85,24 @@ const submit = () => {
                             <div class="sm:col-span-6">
                                 <label for="purpose" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Purpose of visit</label>
                                 <div class="mt-2">
-                                    <input v-model="form.purpose" type="text" id="purpose" required class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700 dark:focus:ring-indigo-500" />
+                                    <input v-model="form.purpose" type="text" id="purpose" required :class="['block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:focus:ring-indigo-500', form.errors.purpose ? 'ring-red-500 focus:ring-red-500' : 'ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600']" />
+                                    <p v-if="form.errors.purpose" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.purpose }}</p>
                                 </div>
                             </div>
 
                             <div class="sm:col-span-3">
                                 <label for="valid_from" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Valid From</label>
                                 <div class="mt-2">
-                                    <input v-model="form.valid_from" type="datetime-local" id="valid_from" required class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700 dark:focus:ring-indigo-500" />
+                                    <input v-model="form.valid_from" type="datetime-local" id="valid_from" required :class="['block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:focus:ring-indigo-500', form.errors.valid_from ? 'ring-red-500 focus:ring-red-500' : 'ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600']" />
+                                    <p v-if="form.errors.valid_from" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.valid_from }}</p>
                                 </div>
                             </div>
 
                             <div class="sm:col-span-3">
                                 <label for="valid_until" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Valid Until</label>
                                 <div class="mt-2">
-                                    <input v-model="form.valid_until" type="datetime-local" id="valid_until" required class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700 dark:focus:ring-indigo-500" />
+                                    <input v-model="form.valid_until" type="datetime-local" id="valid_until" required :class="['block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:focus:ring-indigo-500', form.errors.valid_until ? 'ring-red-500 focus:ring-red-500' : 'ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600']" />
+                                    <p v-if="form.errors.valid_until" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.valid_until }}</p>
                                 </div>
                             </div>
 
@@ -108,8 +126,8 @@ const submit = () => {
 
                     <div class="border-t border-gray-200 dark:border-zinc-800 pt-6 flex items-center justify-end gap-x-6">
                         <Link :href="route('visitors.index')" class="text-sm font-semibold leading-6 text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-zinc-300">Cancel</Link>
-                        <button type="submit" :disabled="form.processing" class="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors disabled:opacity-50">
-                            Generate QR Pass
+                        <button type="submit" :disabled="form.processing || Object.keys(form.errors).length > 0" class="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            {{ form.processing ? 'Creating...' : 'Generate QR Pass' }}
                         </button>
                     </div>
                 </form>

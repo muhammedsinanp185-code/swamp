@@ -10,25 +10,15 @@ class VisitorController extends Controller
     public function index()
     {
         $organizationId = auth()->user()->organization_id;
+        $now = \Illuminate\Support\Carbon::now();
 
         $visitors = \App\Models\Visitor::where('organization_id', $organizationId)
-            ->with(['passes' => function($q) {
-                $q->latest()->take(1);
-            }])
+            ->with(['passes.host'])
             ->latest()
             ->get()
-            ->map(function ($visitor) {
-                $latestPass = $visitor->passes->first();
-                $status = 'N/A';
-                if ($latestPass) {
-                    if ($latestPass->valid_until->isPast()) {
-                        $status = 'expired';
-                    } elseif ($latestPass->valid_from->isFuture()) {
-                        $status = 'pending';
-                    } else {
-                        $status = $latestPass->status ?? 'active';
-                    }
-                }
+            ->map(function ($visitor) use ($now) {
+                $latestPass = $visitor->passes->sortByDesc('valid_from')->first();
+                $status = $latestPass ? $latestPass->current_status : 'N/A';
 
                 return [
                     'id' => $visitor->id,
@@ -71,24 +61,21 @@ class VisitorController extends Controller
             ['name' => $validated['name'], 'email' => $validated['email']]
         );
 
+        // Parse dates properly before storing
+        $validFrom = \Illuminate\Support\Carbon::parse($validated['valid_from'])->utc();
+        $validUntil = \Illuminate\Support\Carbon::parse($validated['valid_until'])->utc();
+
+        // Determine pass status based on the validity window
+        $status = $validFrom->isFuture() ? 'pending' : ($validUntil->isPast() ? 'expired' : 'active');
+
         // Create Pass
-        $status = 'active';
-        $validFrom = \Illuminate\Support\Carbon::parse($validated['valid_from']);
-        $validUntil = \Illuminate\Support\Carbon::parse($validated['valid_until']);
-
-        if ($validUntil->isPast()) {
-            $status = 'expired';
-        } elseif ($validFrom->isFuture()) {
-            $status = 'pending';
-        }
-
         \App\Models\VisitorPass::create([
             'organization_id' => $organizationId,
             'visitor_id' => $visitor->id,
             'host_user_id' => auth()->id(),
             'purpose' => $validated['purpose'],
-            'valid_from' => $validated['valid_from'],
-            'valid_until' => $validated['valid_until'],
+            'valid_from' => $validFrom,
+            'valid_until' => $validUntil,
             'type' => $validated['type'],
             'status' => $status,
             'qr_uuid' => (string) \Illuminate\Support\Str::uuid()
