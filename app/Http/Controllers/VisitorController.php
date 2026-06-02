@@ -26,7 +26,7 @@ class VisitorController extends Controller
                     'phone' => $visitor->phone,
                     'email' => $visitor->email,
                     'host_name' => $latestPass ? ($latestPass->host ? $latestPass->host->name : 'N/A') : 'N/A',
-                    'valid_until' => $latestPass ? $latestPass->valid_until->format('Y-m-d H:i') : 'N/A',
+                    'valid_until' => $latestPass ? $latestPass->valid_until->format('d-m-Y H:i') : 'N/A',
                     'status' => $status,
                 ];
             });

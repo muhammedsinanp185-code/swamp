@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Parcel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ParcelController extends Controller
 {
     public function index()
     {
-        $organizationId = auth()->user()->organization_id ?? null;
+        $organizationId = Auth::user()->organization_id ?? null;
 
         $query = Parcel::query();
 
@@ -27,7 +28,7 @@ class ParcelController extends Controller
                     'tracking_number' => $parcel->tracking_number,
                     'recipient_name' => $parcel->recipient_name,
                     'status' => $parcel->status,
-                    'arrived_at' => $parcel->arrived_at ? $parcel->arrived_at->format('Y-m-d H:i') : $parcel->created_at->format('Y-m-d H:i'),
+                    'arrived_at' => $parcel->arrived_at ? $parcel->arrived_at->format('d-m-Y H:i') : $parcel->created_at->format('d-m-Y H:i'),
                 ];
             });
 
@@ -53,11 +54,28 @@ class ParcelController extends Controller
         ]);
 
         $payload = array_merge($validated, [
-            'organization_id' => auth()->user()->organization_id ?? null,
+            'organization_id' => Auth::user()->organization_id ?? null,
         ]);
 
         Parcel::create($payload);
 
         return redirect()->route('parcels.index')->with('success', 'Parcel logged successfully.');
+    }
+
+    public function update(Request $request, Parcel $parcel)
+    {
+        if ($parcel->organization_id !== Auth::user()->organization_id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:received,collected',
+        ]);
+
+        $parcel->update([
+            'status' => $validated['status'],
+        ]);
+
+        return redirect()->route('parcels.index')->with('success', 'Parcel status updated successfully.');
     }
 }

@@ -17,7 +17,8 @@ import {
   BellIcon,
   MoonIcon,
   SunIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  CheckCircleIcon
 } from '@heroicons/vue/24/outline';
 
 const showingSidebar = ref(false);
@@ -56,6 +57,7 @@ onMounted(() => {
 const navigation = [
   { name: 'Dashboard', href: route('dashboard'), icon: HomeIcon, current: route().current('dashboard') },
   { name: 'Visitors', href: route('visitors.index'), icon: UsersIcon, current: route().current('visitors.*') },
+  { name: 'Pre-approved', href: route('preapproved-visitors.index'), icon: CheckCircleIcon, current: route().current('preapproved-visitors.*') },
   { name: 'QR Scanner', href: route('scanner.index'), icon: QrCodeIcon, current: route().current('scanner.*') },
   { name: 'Parcels', href: route('parcels.index'), icon: TruckIcon, current: route().current('parcels.*') },
   { name: 'Subusers', href: route('subusers.index'), icon: UserGroupIcon, current: route().current('subusers.*') },

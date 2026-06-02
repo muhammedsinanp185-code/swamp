@@ -23,13 +23,17 @@ Route::middleware('guest')->group(function () {
 
     Route::get('login/user', function () {
         return Inertia::render('Auth/LoginUser');
-    });
+    })->name('login.user');
 
     Route::get('login/admin', function () {
         return Inertia::render('Auth/LoginAdmin');
-    });
+    })->name('login.admin');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+    Route::post('login/user', [AuthenticatedSessionController::class, 'store'])
+        ->name('login.user.store');
+    Route::post('login/admin', [AuthenticatedSessionController::class, 'store'])
+        ->name('login.admin.store');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');

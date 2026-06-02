@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,7 +30,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        $guard = $this->loginGuard($request);
+
         $request->authenticate();
+
+        if ($guard === 'admin' && ! Auth::guard($guard)->user()?->hasRole('admin')) {
+            Auth::guard($guard)->logout();
+
+            throw ValidationException::withMessages([
+                'email' => trans('auth.failed'),
+            ]);
+        }
 
         $request->session()->regenerate();
 
@@ -42,11 +53,22 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
+        Auth::guard('user')->logout();
+        Auth::guard('admin')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    private function loginGuard(Request $request): string
+    {
+        if ($request->routeIs('login.admin') || $request->routeIs('login.admin.store')) {
+            return 'admin';
+        }
+
+        return 'web';
     }
 }

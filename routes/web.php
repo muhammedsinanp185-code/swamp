@@ -65,6 +65,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('visitors', App\Http\Controllers\VisitorController::class);
+    Route::get('preapproved-visitors', [App\Http\Controllers\PreapprovedVisitorController::class, 'index'])->name('preapproved-visitors.index');
     Route::resource('organizations', App\Http\Controllers\OrganizationController::class);
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('parcels', App\Http\Controllers\ParcelController::class);
@@ -73,5 +74,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('settings', [App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
     Route::get('scanner', [App\Http\Controllers\QRScannerController::class, 'index'])->name('scanner.index');
 });
+
+
+
 
 require __DIR__.'/auth.php';

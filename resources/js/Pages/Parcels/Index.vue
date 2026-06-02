@@ -53,11 +53,12 @@ const filteredParcels = computed(() => {
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Recipient</th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Arrived At</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                         <tr v-if="filteredParcels.length === 0">
-                            <td colspan="5" class="py-12 text-center text-gray-500 dark:text-zinc-400">
+                            <td colspan="6" class="py-12 text-center text-gray-500 dark:text-zinc-400">
                                 {{ searchQuery ? 'No parcels found matching your search.' : 'No parcels logged today.' }}
                             </td>
                         </tr>
@@ -82,6 +83,21 @@ const filteredParcels = computed(() => {
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-zinc-400">{{ parcel.arrived_at }}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-zinc-400">
+                                <Link
+                                    v-if="parcel.status === 'received'"
+                                    :href="route('parcels.update', parcel.id)"
+                                    method="patch"
+                                    :data="{ status: 'collected' }"
+                                    as="button"
+                                    class="inline-flex items-center rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-700"
+                                >
+                                    Mark Collected
+                                </Link>
+                                <span v-else class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600 dark:bg-zinc-800 dark:text-zinc-300">
+                                    Collected
+                                </span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

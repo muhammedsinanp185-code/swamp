@@ -42,7 +42,9 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $guard = $this->guard();
+
+        if (! Auth::guard($guard)->attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -51,6 +53,19 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    protected function guard(): string
+    {
+        if ($this->routeIs('login.admin') || $this->routeIs('login.admin.store')) {
+            return 'admin';
+        }
+
+        if ($this->routeIs('login.user') || $this->routeIs('login.user.store')) {
+            return 'web';
+        }
+
+        return config('auth.defaults.guard');
     }
 
     /**
